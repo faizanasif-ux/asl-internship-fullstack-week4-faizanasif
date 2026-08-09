@@ -103,7 +103,7 @@
 
         if (res.status === 401) {
           messageEl.style.color = 'red';
-          messageEl.textContent = 'Session expire ho gayi, dobara login karo.';
+          messageEl.textContent = 'Session expired, please login again.';
           setTimeout(() => {
             localStorage.removeItem('token');
             window.location.href = 'login.html';
@@ -116,7 +116,7 @@
 
       } catch (error) {
         messageEl.style.color = 'red';
-        messageEl.textContent = 'Server se connect nahi ho saka';
+        messageEl.textContent = 'Could not connect to server';
       }
     }
 
@@ -125,7 +125,7 @@
       tasksList.innerHTML = '';
 
       if (tasks.length === 0) {
-        tasksList.innerHTML = '<p style="text-align:center;">Koi task nahi hai. Naya task add karo!</p>';
+        tasksList.innerHTML = '<p style="text-align:center;">No tasks yet. Add a new task!</p>';
         return;
       }
 
@@ -150,7 +150,7 @@
 
       if (!title) {
         messageEl.style.color = 'red';
-        messageEl.textContent = 'Title likhna zaroori hai';
+        messageEl.textContent = 'Title is required';
         return;
       }
 
@@ -166,7 +166,7 @@
 
         if (res.status === 401) {
           messageEl.style.color = 'red';
-          messageEl.textContent = 'Session expire ho gayi, dobara login karo.';
+          messageEl.textContent = 'Session expired, please login again.';
           setTimeout(() => {
             localStorage.removeItem('token');
             window.location.href = 'login.html';
@@ -178,7 +178,7 @@
           document.getElementById('title').value = '';
           document.getElementById('description').value = '';
           messageEl.style.color = 'green';
-          messageEl.textContent = 'Task add ho gaya!';
+          messageEl.textContent = 'Task added successfully!';
           loadTasks();
         } else {
           const data = await res.json();
@@ -188,7 +188,7 @@
 
       } catch (error) {
         messageEl.style.color = 'red';
-        messageEl.textContent = 'Server se connect nahi ho saka';
+        messageEl.textContent = 'Could not connect to server';
       }
     }
 
@@ -203,7 +203,7 @@
 
         if (res.status === 401) {
           messageEl.style.color = 'red';
-          messageEl.textContent = 'Session expire ho gayi, dobara login karo.';
+          messageEl.textContent = 'Session expired, please login again.';
           setTimeout(() => {
             localStorage.removeItem('token');
             window.location.href = 'login.html';
@@ -213,19 +213,19 @@
 
         if (res.status === 403) {
           messageEl.style.color = 'orange';
-          messageEl.textContent = 'Aapko is task ko delete karne ki permission nahi hai.';
+          messageEl.textContent = "You don't have permission to delete this task.";
           return;
         }
 
         if (res.ok) {
           messageEl.style.color = 'green';
-          messageEl.textContent = 'Task delete ho gaya!';
+          messageEl.textContent = 'Task deleted successfully!';
           loadTasks();
         }
 
       } catch (error) {
         messageEl.style.color = 'red';
-        messageEl.textContent = 'Server se connect nahi ho saka';
+        messageEl.textContent = 'Could not connect to server';
       }
     }
 
