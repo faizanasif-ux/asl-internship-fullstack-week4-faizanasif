@@ -1,6 +1,6 @@
 const express = require('express');
 const Task = require('../models/Task');
-const protect = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ router.post('/', protect, async (req, res) => {
     const { title, description } = req.body;
 
     if (!title) {
-      return res.status(400).json({ message: 'Title required hai' });
+      return res.status(400).json({ message: 'Title is required' });
     }
 
     const newTask = new Task({
@@ -35,16 +35,26 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
+// Bonus: role-based access - admin can view every user's tasks
+router.get('/all', protect, adminOnly, async (req, res) => {
+  try {
+    const tasks = await Task.find().populate('owner', 'name email');
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 router.put('/:id', protect, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
 
     if (!task) {
-      return res.status(404).json({ message: 'Task nahi mila' });
+      return res.status(404).json({ message: 'Task not found' });
     }
 
     if (task.owner.toString() !== req.userId) {
-      return res.status(403).json({ message: 'Aap is task ko edit nahi kar sakte' });
+      return res.status(403).json({ message: 'You cannot edit this task' });
     }
 
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -60,15 +70,15 @@ router.delete('/:id', protect, async (req, res) => {
     const task = await Task.findById(req.params.id);
 
     if (!task) {
-      return res.status(404).json({ message: 'Task nahi mila' });
+      return res.status(404).json({ message: 'Task not found' });
     }
 
     if (task.owner.toString() !== req.userId) {
-      return res.status(403).json({ message: 'Aap is task ko delete nahi kar sakte' });
+      return res.status(403).json({ message: 'You cannot delete this task' });
     }
 
     await Task.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: 'Task delete ho gaya' });
+    res.status(200).json({ message: 'Task deleted successfully' });
 
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

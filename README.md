@@ -86,3 +86,8 @@ asl-week3-project/
 
 ## Author
 Faizan Asif
+## Bonus Features Implemented
+- **Refresh Tokens:** Login now returns both an access token (15 min expiry) and a refresh token (7 day expiry). Use `POST /api/auth/refresh-token` with the refresh token to get a new access token without logging in again.
+- **Role-Based Access:** Users have a `role` field (`user` or `admin`, default `user`). Admins can view all users' tasks via `GET /api/tasks/all` (regular users get 403 Forbidden on this route).
+- **Mock Password-Reset Flow:** `POST /api/auth/forgot-password` generates a reset token (returned directly in the response instead of being emailed, since this is a mock flow). `POST /api/auth/reset-password` accepts that token plus a new password to reset it.
+- **Rate Limiting on Login:** `POST /api/auth/login` is limited to 5 attempts per 15 minutes per IP address using `express-rate-limit`, to slow down brute-force login attempts.
