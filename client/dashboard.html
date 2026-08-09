@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .add-task-box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 95%;
+      padding: 10px;
+      margin: 5px 0;
+    }
+    .add-btn {
+      background-color: #4CAF50;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .task {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .delete-btn {
+      background-color: #f44336;
+      padding: 5px 10px;
+    }
+    #message {
+      text-align: center;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2 id="welcomeText">Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <p id="message"></p>
+
+  <div class="add-task-box">
+    <input type="text" id="title" placeholder="Task title">
+    <input type="text" id="description" placeholder="Description (optional)">
+    <button class="add-btn" onclick="createTask()">Add Task</button>
+  </div>
+
+  <div id="tasksList"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const userName = localStorage.getItem('userName');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('welcomeText').textContent = 'Welcome, ' + userName;
+
+    async function loadTasks() {
+      const messageEl = document.getElementById('message');
+
+      try {
+        const res = await fetch('http://localhost:5000/api/tasks', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          messageEl.style.color = 'red';
+          messageEl.textContent = 'Session expire ho gayi, dobara login karo.';
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+          }, 1500);
+          return;
+        }
+
+        const tasks = await res.json();
+        displayTasks(tasks);
+
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Server se connect nahi ho saka';
+      }
+    }
+
+    function displayTasks(tasks) {
+      const tasksList = document.getElementById('tasksList');
+      tasksList.innerHTML = '';
+
+      if (tasks.length === 0) {
+        tasksList.innerHTML = '<p style="text-align:center;">Koi task nahi hai. Naya task add karo!</p>';
+        return;
+      }
+
+      tasks.forEach(task => {
+        const taskDiv = document.createElement('div');
+        taskDiv.className = 'task';
+        taskDiv.innerHTML = `
+          <div>
+            <strong>${task.title}</strong><br>
+            <small>${task.description || ''}</small>
+          </div>
+          <button class="delete-btn" onclick="deleteTask('${task._id}')">Delete</button>
+        `;
+        tasksList.appendChild(taskDiv);
+      });
+    }
+
+    async function createTask() {
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      const messageEl = document.getElementById('message');
+
+      if (!title) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Title likhna zaroori hai';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ title, description })
+        });
+
+        if (res.status === 401) {
+          messageEl.style.color = 'red';
+          messageEl.textContent = 'Session expire ho gayi, dobara login karo.';
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+          }, 1500);
+          return;
+        }
+
+        if (res.ok) {
+          document.getElementById('title').value = '';
+          document.getElementById('description').value = '';
+          messageEl.style.color = 'green';
+          messageEl.textContent = 'Task add ho gaya!';
+          loadTasks();
+        } else {
+          const data = await res.json();
+          messageEl.style.color = 'red';
+          messageEl.textContent = data.message;
+        }
+
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Server se connect nahi ho saka';
+      }
+    }
+
+    async function deleteTask(taskId) {
+      const messageEl = document.getElementById('message');
+
+      try {
+        const res = await fetch('http://localhost:5000/api/tasks/' + taskId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (res.status === 401) {
+          messageEl.style.color = 'red';
+          messageEl.textContent = 'Session expire ho gayi, dobara login karo.';
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+          }, 1500);
+          return;
+        }
+
+        if (res.status === 403) {
+          messageEl.style.color = 'orange';
+          messageEl.textContent = 'Aapko is task ko delete karne ki permission nahi hai.';
+          return;
+        }
+
+        if (res.ok) {
+          messageEl.style.color = 'green';
+          messageEl.textContent = 'Task delete ho gaya!';
+          loadTasks();
+        }
+
+      } catch (error) {
+        messageEl.style.color = 'red';
+        messageEl.textContent = 'Server se connect nahi ho saka';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userName');
+      window.location.href = 'login.html';
+    }
+
+    loadTasks();
+  </script>
+
+</body>
+</html>
