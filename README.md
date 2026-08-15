@@ -1,12 +1,12 @@
-﻿# Week 3 & Week 4 - Auth, File Uploads, Pagination, Filtering & Search
+﻿# Week 4 - File Uploads, Pagination, Filtering & Search
 
 ## Project Description
-This project started in Week 3 as an authenticated CRUD application (register/login, JWT authentication, ownership-based authorization). Week 4 extends it by adding file-upload support to tasks and upgrading the task list endpoint with pagination, filtering, and search.
+This project adds file-upload support to tasks and upgrades the task list endpoint with pagination, filtering, and search, on top of an existing authenticated (JWT) task management API.
 
 ## Tech Stack
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB (Atlas)
-- **Authentication:** JWT (jsonwebtoken), bcryptjs (password hashing)
+- **Authentication:** JWT (jsonwebtoken), bcryptjs
 - **File Uploads:** Multer
 - **Frontend:** HTML, CSS, JavaScript (Vanilla)
 
@@ -15,22 +15,22 @@ This project started in Week 3 as an authenticated CRUD application (register/lo
 week4-project/
 - server/
   - models/
-    - User.js (User schema - name, email, hashed password, role)
-    - Task.js (Task schema - title, description, completed, attachment, owner)
+    - User.js
+    - Task.js (title, description, completed, attachment, owner)
   - routes/
-    - authRoutes.js (Register & Login endpoints)
-    - taskRoutes.js (Protected CRUD endpoints + upload + pagination/filter/search)
+    - authRoutes.js
+    - taskRoutes.js (upload + pagination/filter/search)
   - middleware/
-    - authMiddleware.js (JWT verification middleware)
+    - authMiddleware.js
     - uploadMiddleware.js (Multer config - file type/size validation)
   - uploads/ (Uploaded files stored here, not committed to git)
-  - server.js (Main entry point)
-  - .env (Environment variables - not committed)
-  - .env.example (Template showing required variable names)
+  - server.js
+  - .env (not committed)
+  - .env.example
 - client/
-  - register.html (Registration form)
-  - login.html (Login form)
-  - dashboard.html (Task management dashboard - upload, search, filter, pagination)
+  - register.html
+  - login.html
+  - dashboard.html (upload, search, filter, pagination)
 - README.md
 
 ## Setup Instructions
@@ -50,16 +50,16 @@ week4-project/
 3. Log in via `login.html`
 4. You will be redirected to `dashboard.html` to manage tasks
 
-## Week 4 Feature: File Uploads
+## Feature: File Uploads
 
 ### How It Works
-1. The frontend sends task data (title, description, attachment) as `multipart/form-data` using the browser's `FormData` object, instead of plain JSON, because a file cannot be sent as JSON text.
-2. On the backend, the `multer` middleware (`uploadMiddleware.js`) intercepts the request before the route handler runs.
+1. The frontend sends task data (title, description, attachment) as `multipart/form-data` using the browser's `FormData` object, because a file cannot be sent as JSON text.
+2. The `multer` middleware (`uploadMiddleware.js`) intercepts the request before the route handler runs.
 3. The uploaded file is validated:
    - **Allowed types:** JPG, PNG, PDF only
    - **Max size:** 5MB
-   - Invalid files are rejected with a clear error message, and are never saved to disk.
-4. Accepted files are renamed using a unique suffix (`Date.now() + random number`) before saving, so the original filename (which cannot be trusted) is never used directly for storage.
+   - Invalid files are rejected with a clear error message and are never saved to disk.
+4. Accepted files are renamed using a unique suffix (`Date.now() + random number`) before saving, so the original filename is never trusted or used directly for storage.
 5. The file is saved to the local `uploads/` folder, and its relative path (e.g. `/uploads/12345-6789.png`) is stored on the Task document in MongoDB.
 6. The file is served back to the frontend through a static route (`app.use('/uploads', express.static('uploads'))`), so it can be viewed directly in the browser via a link.
 
@@ -69,7 +69,7 @@ POST /api/tasks
 - description: "Buy milk and eggs"
 - attachment: (file)
 
-## Week 4 Feature: Pagination, Filtering & Search
+## Feature: Pagination, Filtering & Search
 
 All three work together on the same endpoint: `GET /api/tasks`
 
@@ -81,8 +81,7 @@ All three work together on the same endpoint: `GET /api/tasks`
 | `search` | Partial, case-insensitive match on task title | `?search=grocery` |
 
 ### Combined Example
-GET /api/tasks?page=1&limit=5&completed=false&search=shopping
-This returns page 1, 5 results per page, only incomplete tasks, whose title contains "shopping" (case-insensitive).
+GET /api/tasks?page=1&limit=5&completed=false&search=shoppingThis returns page 1, 5 results per page, only incomplete tasks, whose title contains "shopping" (case-insensitive).
 
 ### Response Shape
 ```json
@@ -94,16 +93,7 @@ This returns page 1, 5 results per page, only incomplete tasks, whose title cont
 }
 ```
 
-The query respects the same ownership rule from Week 3 - a user only ever sees their own tasks, regardless of the filters applied.
-
-## Authentication Flow
-1. **Register:** The user submits name, email, and password. The password is hashed using bcrypt before being saved to the database.
-2. **Login:** The user submits email and password. If the credentials are valid, a JWT token is generated and returned along with basic user info.
-3. **Token Storage:** The frontend stores the token in `localStorage` after a successful login.
-4. **Protected Requests:** For every task-related request, the token is sent in the `Authorization` header as `Bearer <token>`.
-5. **Middleware Verification:** The backend middleware verifies the token before allowing access to protected routes. If the token is missing or invalid, a `401 Unauthorized` response is returned.
-6. **Ownership Check:** For update/delete operations, the backend checks whether the logged-in user owns the task. If not, a `403 Forbidden` response is returned.
-7. **Logout:** Clears the token from `localStorage` and redirects to the login page.
+The query respects ownership - a user only ever sees their own tasks, regardless of the filters applied.
 
 ## Protected Endpoints
 
@@ -113,15 +103,11 @@ The query respects the same ownership rule from Week 3 - a user only ever sees t
 | POST   | /api/auth/login      | No        | -                | Rate limited (5/15min) |
 | POST   | /api/tasks           | Yes       | -                | Accepts multipart/form-data with optional file |
 | GET    | /api/tasks           | Yes       | Returns only own tasks | Supports page, limit, completed, search |
-| GET    | /api/tasks/all       | Yes       | Admin only       | Bonus feature from Week 3 |
+| GET    | /api/tasks/all       | Yes       | Admin only       | |
 | PUT    | /api/tasks/:id       | Yes       | Yes              | |
 | DELETE | /api/tasks/:id       | Yes       | Yes              | |
 
-## Features Implemented (Week 3 + Week 4)
-- User registration with hashed passwords (bcrypt)
-- Login with JWT token generation
-- Auth middleware protecting all task routes
-- Ownership-based authorization on update/delete
+## Features Implemented
 - File upload with type and size validation (Multer)
 - Uploaded files stored on disk and referenced on the task record
 - Uploaded files served back to the frontend via a static route
@@ -129,21 +115,13 @@ The query respects the same ownership rule from Week 3 - a user only ever sees t
 - Filtering by completion status
 - Case-insensitive partial search by title
 - Frontend upload form, search box, filter dropdown, and pagination controls
-- 401 (not logged in) and 403 (not permitted) handled separately in the UI
-- Logout functionality that clears the token
+- Existing authentication/ownership rules preserved throughout
 
 ## Testing Notes
-- Tested file upload with valid image (PNG) - accepted and stored correctly.
+- Tested file upload with a valid image (PNG) - accepted and stored correctly.
 - Tested that the uploaded file is viewable directly via its `/uploads/...` URL in the browser.
-- Tested pagination, filter, and search independently and combined via Postman and the frontend UI.
-- Tested with two separate user accounts to confirm that one user cannot update or delete another user's tasks (returns 403 Forbidden).
-- Tested that requests without a token are rejected with 401 Unauthorized.
+- Tested pagination, filter, and search independently and combined, via Postman and the frontend UI.
+- Confirmed a user only ever sees and manages their own tasks.
 
 ## Author
 Faizan Asif
-
-## Bonus Features Implemented
-- **Refresh Tokens:** Login now returns both an access token (15 min expiry) and a refresh token (7 day expiry). Use `POST /api/auth/refresh-token` with the refresh token to get a new access token without logging in again.
-- **Role-Based Access:** Users have a `role` field (`user` or `admin`, default `user`). Admins can view all users tasks via `GET /api/tasks/all` (regular users get 403 Forbidden on this route).
-- **Mock Password-Reset Flow:** `POST /api/auth/forgot-password` generates a reset token (returned directly in the response instead of being emailed, since this is a mock flow). `POST /api/auth/reset-password` accepts that token plus a new password to reset it.
-- **Rate Limiting on Login:** `POST /api/auth/login` is limited to 5 attempts per 15 minutes per IP address using `express-rate-limit`, to slow down brute-force login attempts.
