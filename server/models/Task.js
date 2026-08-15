@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+﻿const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
   title: {
@@ -12,6 +12,10 @@ const taskSchema = new mongoose.Schema({
   completed: {
     type: Boolean,
     default: false
+  },
+  attachment: {
+    type: String,
+    default: null
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
