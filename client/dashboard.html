@@ -58,7 +58,6 @@
       flex-wrap: wrap;
       align-items: center;
     }
-<<<<<<< HEAD
     .controls-box input,
     .controls-box select {
       width: auto;
@@ -71,14 +70,6 @@
       padding: 10px 20px;
       white-space: nowrap;
     }
-=======
-    .controls-box input, .controls-box select {
-      width: auto;
-      flex: 1;
-      min-width: 150px;
-      margin: 0;
-    }
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
     .task {
       background: white;
       padding: 15px;
@@ -89,6 +80,18 @@
       justify-content: space-between;
       align-items: center;
     }
+    .task-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .task-thumb {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
     .task a {
       color: #2196F3;
       text-decoration: none;
@@ -96,12 +99,6 @@
     .delete-btn {
       background-color: #f44336;
       padding: 5px 10px;
-    }
-    .attachment-link {
-      display: inline-block;
-      margin-top: 5px;
-      color: #2196F3;
-      font-size: 13px;
     }
     #message {
       text-align: center;
@@ -112,7 +109,6 @@
       justify-content: center;
       align-items: center;
       gap: 15px;
-<<<<<<< HEAD
       margin-top: 15px;
     }
     .pagination button {
@@ -122,15 +118,6 @@
     }
     .pagination button:disabled {
       opacity: 0.5;
-=======
-      margin-top: 20px;
-    }
-    .pagination button {
-      background-color: #2196F3;
-    }
-    .pagination button:disabled {
-      background-color: #ccc;
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
       cursor: not-allowed;
     }
   </style>
@@ -147,11 +134,7 @@
   <div class="add-task-box">
     <input type="text" id="title" placeholder="Task title">
     <input type="text" id="description" placeholder="Description (optional)">
-<<<<<<< HEAD
     <input type="file" id="attachment">
-=======
-    <input type="file" id="attachment" accept=".jpg,.jpeg,.png,.pdf">
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
     <button class="add-btn" onclick="createTask()">Add Task</button>
   </div>
 
@@ -162,7 +145,6 @@
       <option value="true">Completed</option>
       <option value="false">Pending</option>
     </select>
-<<<<<<< HEAD
     <select id="sortSelect">
       <option value="createdAt-desc">Newest first</option>
       <option value="createdAt-asc">Oldest first</option>
@@ -170,33 +152,19 @@
       <option value="title-desc">Title Z-A</option>
     </select>
     <button class="apply-btn" onclick="applyFilters()">Apply</button>
-=======
-    <button onclick="applyFilters()">Apply</button>
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
   </div>
 
   <div id="tasksList"></div>
 
   <div class="pagination">
-<<<<<<< HEAD
     <button id="prevBtn" onclick="goToPage(currentPage - 1)">Previous</button>
     <span id="pageInfo">Page 1 of 1</span>
     <button id="nextBtn" onclick="goToPage(currentPage + 1)">Next</button>
-=======
-    <button id="prevBtn" onclick="goPrevPage()">Previous</button>
-    <span id="pageInfo">Page 1</span>
-    <button id="nextBtn" onclick="goNextPage()">Next</button>
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
   </div>
 
   <script>
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
-    const API_URL = 'http://localhost:5000';
-
-    let currentPage = 1;
-    const limit = 5;
-    let totalPages = 1;
 
     if (!token) {
       window.location.href = 'login.html';
@@ -204,25 +172,8 @@
 
     document.getElementById('welcomeText').textContent = 'Welcome, ' + userName;
 
-<<<<<<< HEAD
     let currentPage = 1;
     const limit = 5;
-=======
-    function buildQueryUrl() {
-      const search = document.getElementById('searchInput').value;
-      const completed = document.getElementById('filterSelect').value;
-
-      let url = API_URL + '/api/tasks?page=' + currentPage + '&limit=' + limit;
-
-      if (search) {
-        url += '&search=' + encodeURIComponent(search);
-      }
-      if (completed) {
-        url += '&completed=' + completed;
-      }
-      return url;
-    }
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
 
     async function loadTasks() {
       const messageEl = document.getElementById('message');
@@ -240,11 +191,7 @@
       params.set('order', order);
 
       try {
-<<<<<<< HEAD
         const res = await fetch('http://localhost:5000/api/tasks?' + params.toString(), {
-=======
-        const res = await fetch(buildQueryUrl(), {
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
           headers: { 'Authorization': 'Bearer ' + token }
         });
 
@@ -280,27 +227,23 @@
       tasks.forEach(task => {
         const taskDiv = document.createElement('div');
         taskDiv.className = 'task';
-<<<<<<< HEAD
+
+        const thumbHtml = task.thumbnail
+          ? `<img class="task-thumb" src="http://localhost:5000${task.thumbnail}" alt="thumbnail">`
+          : '';
+
         const attachmentLink = task.attachment
           ? `<br><a href="http://localhost:5000${task.attachment}" target="_blank">View Attachment</a>`
           : '';
-=======
 
-        let attachmentHtml = '';
-        if (task.attachment) {
-          attachmentHtml = '<br><a class="attachment-link" href="' + API_URL + task.attachment + '" target="_blank">View Attachment</a>';
-        }
-
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
         taskDiv.innerHTML = `
-          <div>
-            <strong>${task.title}</strong><br>
-            <small>${task.description || ''}</small>
-<<<<<<< HEAD
-            ${attachmentLink}
-=======
-            ${attachmentHtml}
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
+          <div class="task-info">
+            ${thumbHtml}
+            <div>
+              <strong>${task.title}</strong><br>
+              <small>${task.description || ''}</small>
+              ${attachmentLink}
+            </div>
           </div>
           <button class="delete-btn" onclick="deleteTask('${task._id}')">Delete</button>
         `;
@@ -308,7 +251,6 @@
       });
     }
 
-<<<<<<< HEAD
     function updatePagination(page, totalPages, totalTasks) {
       currentPage = page;
       document.getElementById('pageInfo').textContent =
@@ -321,28 +263,6 @@
       if (page < 1) return;
       currentPage = page;
       loadTasks();
-=======
-    function updatePagination(page, pages, total) {
-      currentPage = page;
-      totalPages = pages;
-      document.getElementById('pageInfo').textContent = 'Page ' + page + ' of ' + (pages || 1) + ' (' + total + ' tasks)';
-      document.getElementById('prevBtn').disabled = page <= 1;
-      document.getElementById('nextBtn').disabled = page >= pages;
-    }
-
-    function goPrevPage() {
-      if (currentPage > 1) {
-        currentPage--;
-        loadTasks();
-      }
-    }
-
-    function goNextPage() {
-      if (currentPage < totalPages) {
-        currentPage++;
-        loadTasks();
-      }
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
     }
 
     function applyFilters() {
@@ -353,11 +273,7 @@
     async function createTask() {
       const title = document.getElementById('title').value;
       const description = document.getElementById('description').value;
-<<<<<<< HEAD
       const attachmentInput = document.getElementById('attachment');
-=======
-      const fileInput = document.getElementById('attachment');
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
       const messageEl = document.getElementById('message');
 
       if (!title) {
@@ -369,17 +285,12 @@
       const formData = new FormData();
       formData.append('title', title);
       formData.append('description', description);
-<<<<<<< HEAD
       if (attachmentInput.files[0]) {
         formData.append('attachment', attachmentInput.files[0]);
-=======
-      if (fileInput.files[0]) {
-        formData.append('attachment', fileInput.files[0]);
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
       }
 
       try {
-        const res = await fetch(API_URL + '/api/tasks', {
+        const res = await fetch('http://localhost:5000/api/tasks', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + token
@@ -400,14 +311,9 @@
         if (res.ok) {
           document.getElementById('title').value = '';
           document.getElementById('description').value = '';
-<<<<<<< HEAD
           attachmentInput.value = '';
-=======
-          fileInput.value = '';
->>>>>>> fa4dc193a20c2b1003a2efa0429b736ca1e99c4e
           messageEl.style.color = 'green';
           messageEl.textContent = 'Task added successfully!';
-          currentPage = 1;
           loadTasks();
         } else {
           const data = await res.json();
@@ -425,7 +331,7 @@
       const messageEl = document.getElementById('message');
 
       try {
-        const res = await fetch(API_URL + '/api/tasks/' + taskId, {
+        const res = await fetch('http://localhost:5000/api/tasks/' + taskId, {
           method: 'DELETE',
           headers: { 'Authorization': 'Bearer ' + token }
         });
