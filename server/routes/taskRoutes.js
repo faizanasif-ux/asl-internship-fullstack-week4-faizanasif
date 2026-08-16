@@ -1,10 +1,11 @@
-const express = require('express');
+﻿const express = require('express');
 const Task = require('../models/Task');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, upload.single('attachment'), async (req, res) => {
   try {
     const { title, description } = req.body;
 
@@ -15,7 +16,8 @@ router.post('/', protect, async (req, res) => {
     const newTask = new Task({
       title,
       description,
-      owner: req.userId
+      owner: req.userId,
+      attachment: req.file ? ('/uploads/' + req.file.filename) : null
     });
 
     await newTask.save();
@@ -28,14 +30,43 @@ router.post('/', protect, async (req, res) => {
 
 router.get('/', protect, async (req, res) => {
   try {
-    const tasks = await Task.find({ owner: req.userId });
-    res.status(200).json(tasks);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const query = { owner: req.userId };
+
+    if (req.query.completed === 'true' || req.query.completed === 'false') {
+      query.completed = req.query.completed === 'true';
+    }
+
+    if (req.query.search) {
+      query.title = { $regex: req.query.search, $options: 'i' };
+    }
+
+    const allowedSortFields = ['createdAt', 'title'];
+    let sortField = allowedSortFields.includes(req.query.sortBy) ? req.query.sortBy : 'createdAt';
+    let sortOrder = req.query.order === 'asc' ? 1 : -1;
+    const sortOption = {};
+    sortOption[sortField] = sortOrder;
+
+    const totalTasks = await Task.countDocuments(query);
+    const tasks = await Task.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort(sortOption);
+
+    res.status(200).json({
+      tasks,
+      currentPage: page,
+      totalPages: Math.ceil(totalTasks / limit),
+      totalTasks
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Bonus: role-based access - admin can view every user's tasks
 router.get('/all', protect, adminOnly, async (req, res) => {
   try {
     const tasks = await Task.find().populate('owner', 'name email');
