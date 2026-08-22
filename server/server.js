@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const morgan = require('morgan');
 require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
@@ -9,11 +10,16 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 app.use(cors());
+app.use(morgan('dev'));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'OK', uptime: process.uptime() });
+});
 
 app.get('/', (req, res) => {
   res.send('Server chal raha hai!');
@@ -30,4 +36,6 @@ app.listen(PORT, () => {
 app.use(errorHandler);
 
 module.exports = app;
+
+
 
