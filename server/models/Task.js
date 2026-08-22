@@ -17,6 +17,10 @@ const taskSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  thumbnail: {
+    type: String,
+    default: null
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
