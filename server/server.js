@@ -1,9 +1,10 @@
-﻿const express = require('express');
+const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -24,5 +25,9 @@ mongoose.connect(process.env.MONGODB_URI)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server chal raha hai port ${PORT} par`);
+ console.log(`Server is running on port ${PORT}`);
 });
+app.use(errorHandler);
+
+module.exports = app;
+
